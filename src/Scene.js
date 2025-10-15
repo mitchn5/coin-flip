@@ -1,8 +1,6 @@
-import React, { useState } from "react";
-import { useCylinder, usePlane } from "@react-three/cannon";
-import { useFrame, useLoader } from "@react-three/fiber";
-import { Text } from "@react-three/drei";
-import * as THREE from "three";
+import { useState } from "react";
+import { usePlane } from "@react-three/cannon";
+import { useLoader } from "@react-three/fiber";
 import { TextureLoader, RepeatWrapping } from 'three';
 import Coin from "./Coin";
 
@@ -47,7 +45,6 @@ function Ground() {
 
 
 export default function Scene({ onResult, coinColor, headsType, tailsType, soundEnabled }) {
-    const [lastResult, setLastResult] = useState(null);
 
     return (
         <>
