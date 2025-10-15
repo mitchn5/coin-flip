@@ -12,15 +12,21 @@ export default function Coin({ onResult, color = "gold", headsType = "default", 
     linearDamping: 0.05,
   }));
 
-  const [headsDefault, tailsDefault, headsAlt, tailsAlt] = useLoader(THREE.TextureLoader, [
+  const [headsDefault, tailsDefault, headsAlt, tailsAlt, tailsSecret] = useLoader(THREE.TextureLoader, [
     "/textures/heads/real-head.jpeg",
     "/textures/tails/leaf.jpeg",
     "/textures/heads/smiley.jpeg",
     "/textures/tails/curl_tail.jpeg",
+    "textures/tails/heart.jpeg"
   ]);
 
   const headsTex = headsType === "alt" ? headsAlt : headsDefault;
-  const tailsTex = tailsType === "alt" ? tailsAlt : tailsDefault;
+  const tailsTex =
+    tailsType === "alt"
+      ? tailsAlt
+      : tailsType === "secret"
+        ? tailsSecret
+        : tailsDefault;
 
   const velocityRef = useRef([0, 0, 0]);
   const angularVelocityRef = useRef([0, 0, 0]);

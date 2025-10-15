@@ -22,6 +22,11 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
 
+  // Easter egg logic
+  const [tailsAltClicks, setTailsAltClicks] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const [secretUnlocked, setSecretUnlocked] = useState(false);
+
   // Load customization data on launch
   useEffect(() => {
     async function loadPreferences() {
@@ -32,6 +37,7 @@ export default function App() {
           if (saved.color) setCoinColor(saved.color);
           if (saved.heads) setHeadsType(saved.heads);
           if (saved.tails) setTailsType(saved.tails);
+          if (saved.secretUnlocked) setSecretUnlocked(saved.secretUnlocked);
           if (saved.soundEnabled) setSoundEnabled(saved.soundEnabled);
         }
       } catch (err) {
@@ -48,6 +54,7 @@ export default function App() {
         color: coinColor,
         heads: headsType,
         tails: tailsType,
+        secretUnlocked,
         soundEnabled: soundEnabled,
       };
       await Preferences.set({
@@ -56,7 +63,7 @@ export default function App() {
       });
     }
     savePreferences();
-  }, [coinColor, headsType, tailsType, soundEnabled]);
+  }, [coinColor, headsType, tailsType, secretUnlocked, soundEnabled]);
 
   // Load streak data on launch
   useEffect(() => {
@@ -128,7 +135,31 @@ export default function App() {
     setStreak(0);
     setLastFace(null);
     setBestStreak({ face: null, count: 0 });
+    setSecretUnlocked(false);
+    await Preferences.remove({ key: 'coinCustomization' });
   };
+
+  const resetCustomization = async () => {
+    // reset states
+    setCoinColor("gold");
+    setHeadsType("default");
+    setTailsType("default");
+    setSecretUnlocked(false);
+    setTailsAltClicks(0);
+
+    // remove saved data
+    await Preferences.remove({ key: "coinCustomization" });
+
+    // optional — little UI feedback
+    alert("Customizations have been reset!");
+  };
+
+  useEffect(() => {
+    if (tailsAltClicks > 0) {
+      const timer = setTimeout(() => setTailsAltClicks(0), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [tailsAltClicks]);
 
   const logCoinData = async () => {
     document.dispatchEvent(new Event("log-data"));
@@ -591,10 +622,29 @@ export default function App() {
                 {[
                   { id: "default", src: "/textures/placeholders/leaf.jpeg", label: "Maple Leaf" },
                   { id: "alt", src: "/textures/placeholders/curl_tail.jpeg", label: "Curly" },
+                  ...(secretUnlocked
+                    ? [{ id: "secret", src: "/textures/placeholders/heart.jpeg", label: "For my <3" }]
+                    : []),
                 ].map((option) => (
                   <div
                     key={option.id}
-                    onClick={() => setTailsType(option.id)}
+                    onClick={() => {
+                      if (option.id === "alt") {
+                        setTailsAltClicks((prev) => {
+                          const newCount = prev + 1;
+                          if (newCount >= 3 && !secretUnlocked) {
+                            setShowEasterEgg(true);
+                            setSecretUnlocked(true);
+                            setTailsType("secret"); // changes to secret texture
+                            return 0; // reset click count
+                          }
+                          return newCount;
+                        });
+                      } else {
+                        setTailsAltClicks(0);
+                        setTailsType(option.id);
+                      }
+                    }}
                     style={{
                       border:
                         tailsType === option.id
@@ -635,6 +685,22 @@ export default function App() {
               </div>
             </div>
 
+            <div>
+              <button
+                onClick={resetCustomization}
+                style={{
+                  marginTop: "10px",
+                  background: "#444",
+                  color: "white",
+                  border: "1px solid #777",
+                  padding: "8px 14px",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                Reset Customizations
+              </button>
+            </div>
             <button
               onClick={() => setShowCustomize(false)}
               style={{
@@ -650,6 +716,54 @@ export default function App() {
               Close
             </button>
           </div>
+          {showEasterEgg && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                background: "rgba(0, 0, 0, 0.6)",
+                zIndex: 30,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  background: "#333",
+                  color: "white",
+                  padding: "24px 32px",
+                  borderRadius: "10px",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+                  textAlign: "center",
+                  fontFamily: "Arial, sans-serif",
+                  maxWidth: "320px",
+                }}
+              >
+                <h3 style={{ marginBottom: "12px" }}>For my Love</h3>
+                <p style={{ marginBottom: "16px" }}>
+                  My heart to flip 💖
+                </p>
+                <button
+                  onClick={() => setShowEasterEgg(false)}
+                  style={{
+                    background: "gold",
+                    color: "black",
+                    border: "none",
+                    padding: "8px 14px",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
 
