@@ -4,6 +4,7 @@ import Scene from "./Scene";
 import NoiseBackground from "./NoiseBackground";
 import { useState, useEffect, use } from "react";
 import { Preferences } from "@capacitor/preferences";
+import { Capacitor } from "@capacitor/core";
 import "./App.css";
 
 export default function App() {
@@ -26,6 +27,8 @@ export default function App() {
   const [tailsAltClicks, setTailsAltClicks] = useState(0);
   const [showEasterEgg, setShowEasterEgg] = useState(false);
   const [secretUnlocked, setSecretUnlocked] = useState(false);
+
+  const isIOS = Capacitor.getPlatform() === 'ios';
 
   // Load customization data on launch
   useEffect(() => {
@@ -188,7 +191,7 @@ export default function App() {
       <div
         style={{
           position: "absolute",
-          top: "15px",
+          top: isIOS ? "30px" : "15px",
           left: face ? "60px" : "115px",
           transform: "translateX(-50%)",
           color: "white",
@@ -234,7 +237,7 @@ export default function App() {
         onClick={() => setShowSettings(prev => !prev)} // toggle open/close
         style={{
           position: "absolute",
-          top: "25px",
+          top: isIOS ? "40px" : "25px",
           right: "20px",
           background: "transparent",
           border: "none",
