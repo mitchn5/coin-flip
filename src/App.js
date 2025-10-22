@@ -41,7 +41,7 @@ export default function App() {
           if (saved.heads) setHeadsType(saved.heads);
           if (saved.tails) setTailsType(saved.tails);
           if (saved.secretUnlocked) setSecretUnlocked(saved.secretUnlocked);
-          if (saved.soundEnabled) setSoundEnabled(saved.soundEnabled);
+          if (saved.soundEnabled !== undefined) setSoundEnabled(saved.soundEnabled);
         }
       } catch (err) {
         console.warn('Failed to load saved preferences', err);
@@ -632,20 +632,24 @@ export default function App() {
                   <div
                     key={option.id}
                     onClick={() => {
+                      // Always set the selected texture first
+                      setTailsType(option.id);
+
                       if (option.id === "alt") {
                         setTailsAltClicks((prev) => {
                           const newCount = prev + 1;
+
+                          // If triple-clicked within 2 seconds, unlock secret
                           if (newCount >= 3 && !secretUnlocked) {
                             setShowEasterEgg(true);
                             setSecretUnlocked(true);
-                            setTailsType("secret"); // changes to secret texture
-                            return 0; // reset click count
+                            setTailsType("secret");
+                            return 0;
                           }
                           return newCount;
                         });
                       } else {
                         setTailsAltClicks(0);
-                        setTailsType(option.id);
                       }
                     }}
                     style={{
